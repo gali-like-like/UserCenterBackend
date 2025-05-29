@@ -1,5 +1,6 @@
 package com.galilikelike.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.galilikelike.annos.PreAuth;
 import com.galilikelike.common.BusinessException;
 import com.galilikelike.common.ErrorCode;
@@ -58,8 +59,8 @@ public class UserController {
     @PostMapping("/page")
     @PreAuth(userRole = "管理员")
     public Result searchPageUsers(@Valid @RequestBody PageDto pageDto,HttpServletRequest request) {
-        List<UserVo> userVos = userService.searchPageUsers(pageDto, request);
-        return Result.success(userVos);
+        Page<UserVo> pageUsers = userService.searchPageUsers(pageDto, request);
+        return Result.success(pageUsers);
     }
 
     @PostMapping("/views")

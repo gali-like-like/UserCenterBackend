@@ -1,5 +1,6 @@
 package com.galilikelike.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.galilikelike.model.dto.PageDto;
 import com.galilikelike.model.dto.UserDto;
@@ -32,13 +33,15 @@ public interface UserService extends IService<User> {
 
     UserVo getCurrentUser(HttpServletRequest request);
 
-    List<UserVo> searchPageUsers(@Valid PageDto pageDto, HttpServletRequest request);
+    Page<UserVo> searchPageUsers(@Valid PageDto pageDto, HttpServletRequest request);
 
     Boolean logout(HttpServletRequest request);
 
     Boolean resetPassword(UserLoginDto loginDto);
 
     String createCode(HttpServletRequest request);
+
+    Page<UserVo> pageUsers(@Valid PageDto pageDto);
 
     List<UserSimpleVo> viewsUsers(PageDto pageDto,HttpServletRequest request);
 }

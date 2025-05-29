@@ -1,7 +1,9 @@
 package com.galilikelike.model.user;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.galilikelike.model.dto.PageDto;
 import com.galilikelike.model.dto.UserDto;
 import com.galilikelike.model.dto.UserLoginDto;
 import com.galilikelike.model.pojo.User;
@@ -63,6 +65,13 @@ public class TestUser {
     public void testUsername() {
         boolean rs = Pattern.matches("\\w{6,}", "al;bce4F");
         assertEquals(false, rs,"匹配成功");
+    }
+
+    @Test
+    @DisplayName("测试分页")
+    public void testPage() {
+        Page<UserVo> userVos = userService.pageUsers(new PageDto(1, 10));
+        assertEquals(10, userVos.getSize(),"数据数量不够");
     }
 
 //    @Test

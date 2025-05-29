@@ -5,6 +5,7 @@ import cn.hutool.captcha.ShearCaptcha;
 import cn.hutool.captcha.generator.MathGenerator;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -23,6 +24,7 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,6 +49,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     private static final Logger LOG = LoggerFactory.getLogger(UserServiceImpl.class);
     private ConcurrentHashMap<String,ShearCaptcha> hashMap = new ConcurrentHashMap<>();
+
+    @Autowired
+    private UserMapper userMapper;
+
+    public UserServiceImpl() {
+    }
+
     @Override
     public Long regedit(@Valid UserDto userDto,HttpServletRequest request) {
         String code = userDto.getCode();
@@ -66,7 +75,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         String account = userDto.getUserAccount();
         User user = this.getOne(new QueryWrapper<User>().eq("userAccount",account ));
         if (user != null) {
-            throw BusinessException.getUserNull();
+            throw BusinessException.getUserExists();
         } else {
             String encryptPassword = DigestUtils.md5DigestAsHex((UserContant.SALT+password).getBytes(StandardCharsets.UTF_8));
             User newUser = new User();
@@ -103,8 +112,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public List<UserVo> searchPageUsers(@Valid PageDto pageDto,HttpServletRequest request) {
-        return this.list(new Page<>(pageDto.getCurrent(),pageDto.getPageSize())).stream().map(this::getUserVo).toList();
+    public Page<UserVo> searchPageUsers(@Valid PageDto pageDto,HttpServletRequest request) {
+//        return this.list(new Page<>(pageDto.getCurrent(),pageDto.getPageSize())).stream().map(this::getUserVo).toList();
+        Page<User> userPage = userMapper.selectPage(new Page<>(pageDto.getCurrent(),pageDto.getPageSize()),null);
+        List<User> users = userPage.getRecords();
+        List<UserVo> userVos = users.stream().map(this::getUserVo).collect(Collectors.toList());
+        LOG.info("用户:{}",userVos);
+        Page<UserVo> userVoPage = new Page<>(userPage.getCurrent(),userPage.getSize(),userPage.getTotal());
+        userVoPage.setRecords(userVos);
+        return userVoPage;
     }
 
     @Override
@@ -141,6 +157,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         // 设置session
         request.getSession().setAttribute("captcha",captcha);
         return captcha.getImageBase64Data();
+    }
+
+    public Page<UserVo> pageUsers(@Valid PageDto pageDto) {
+        return this.searchPageUsers(pageDto,null);
     }
 
     @Override

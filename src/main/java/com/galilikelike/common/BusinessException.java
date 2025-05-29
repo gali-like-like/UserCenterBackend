@@ -12,6 +12,7 @@ public class BusinessException extends RuntimeException {
     private final static BusinessException USER_NULL = new BusinessException("用户不存在");
     private final static BusinessException PASSWORD_ERROR = new BusinessException("密码错误");
     private final static BusinessException USER_NOT_LOGIN = new BusinessException("用户未登录");
+    private final static BusinessException USER_EXISTS = new BusinessException("用户已存在,无法注册");
     public static BusinessException getUserNull() {
         return USER_NULL;
     }
@@ -20,5 +21,8 @@ public class BusinessException extends RuntimeException {
     }
     public static BusinessException getUserNotLogin() {
         return USER_NOT_LOGIN;
+    }
+    public static BusinessException getUserExists() {
+        return USER_EXISTS;
     }
 }

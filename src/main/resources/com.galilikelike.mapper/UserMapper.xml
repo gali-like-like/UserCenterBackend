@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.galilikelike.mapper">
+<mapper namespace="com.galilikelike.mapper.UserMapper">
 
     <resultMap id="BaseResultMap" type="com.galilikelike.model.pojo.User">
             <id property="id" column="id" />
@@ -24,4 +24,8 @@
         avatarUrl,userRole,userStatus,createTime,updateTime,
         isDelete
     </sql>
+
+    <select id="selectUserPage" resultType="com.galilikelike.model.pojo.User">
+        select * from users where user_role = 0 and user_status = 0 order by create_time
+    </select>
 </mapper>

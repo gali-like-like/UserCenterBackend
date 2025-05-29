@@ -1,13 +1,14 @@
 package com.galilikelike.mapper;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.galilikelike.contant.UserContant;
 import com.galilikelike.model.pojo.User;
 import org.apache.ibatis.annotations.Mapper;
-
-import java.util.Objects;
 
 
 /**
@@ -29,6 +30,7 @@ public interface UserMapper extends BaseMapper<User> {
         return false;
     }
 
+    Page<User> selectUserPage(Page<User> page);
 }
 
 
