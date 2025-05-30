@@ -1,6 +1,8 @@
 package com.galilikelike.aop;
 
 import com.galilikelike.annos.PreAuth;
+import com.galilikelike.common.ErrorCode;
+import com.galilikelike.common.Result;
 import com.galilikelike.contant.UserContant;
 import com.galilikelike.model.vo.UserVo;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,7 +26,7 @@ public class CheckAuthAop {
     }
 
     @Around("auth()")
-    public Object checkAuth(ProceedingJoinPoint joinPoint) throws Throwable {
+    public Result checkAuth(ProceedingJoinPoint joinPoint) throws Throwable {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
         PreAuth annotation = method.getAnnotation(PreAuth.class);
@@ -36,9 +38,9 @@ public class CheckAuthAop {
         String nowUserRole = userVo.getUserRole();
         String userRole = annotation.userRole();
         if (nowUserRole.equals(userRole)) {
-            return joinPoint.proceed();
+            return (Result) joinPoint.proceed();
         } else {
-            return null;
+            return Result.fail(ErrorCode.NO_AUTH);
         }
     }
 }

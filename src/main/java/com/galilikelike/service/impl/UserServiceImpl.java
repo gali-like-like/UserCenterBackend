@@ -111,6 +111,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
     }
 
+
     @Override
     public Page<UserVo> searchPageUsers(@Valid PageDto pageDto,HttpServletRequest request) {
 //        return this.list(new Page<>(pageDto.getCurrent(),pageDto.getPageSize())).stream().map(this::getUserVo).toList();
@@ -136,10 +137,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
+    public Boolean forbid(String account,HttpServletRequest request) {
+        return userMapper.changeStatus(account);
+    }
+
+    @Override
     @Transactional(rollbackFor = DataAccessException.class)
     public Boolean resetPassword(UserLoginDto loginDto) {
         String account = loginDto.getUserAccount();
-        Boolean result = baseMapper.resetPasswordByAccount(account);
+        Boolean result = userMapper.resetPasswordByAccount(account);
         return result;
     }
 

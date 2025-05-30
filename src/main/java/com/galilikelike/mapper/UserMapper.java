@@ -10,6 +10,8 @@ import com.galilikelike.contant.UserContant;
 import com.galilikelike.model.pojo.User;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.util.List;
+
 
 /**
 * @author Lenovo
@@ -31,6 +33,16 @@ public interface UserMapper extends BaseMapper<User> {
     }
 
     Page<User> selectUserPage(Page<User> page);
+
+    default Boolean changeStatus(String userAccount) {
+        if (StringUtils.isNotEmpty(userAccount)) {
+            UpdateWrapper<User> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.set("userStatus",1).eq("userAccount",userAccount);
+            this.update(updateWrapper);
+            return true;
+        }
+        return false;
+    }
 }
 
 

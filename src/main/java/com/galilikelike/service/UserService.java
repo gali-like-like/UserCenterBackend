@@ -44,4 +44,6 @@ public interface UserService extends IService<User> {
     Page<UserVo> pageUsers(@Valid PageDto pageDto);
 
     List<UserSimpleVo> viewsUsers(PageDto pageDto,HttpServletRequest request);
+
+    Boolean forbid(String account,HttpServletRequest request);
 }

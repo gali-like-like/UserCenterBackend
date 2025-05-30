@@ -74,39 +74,6 @@ public class TestUser {
         assertEquals(10, userVos.getSize(),"数据数量不够");
     }
 
-//    @Test
-//    @DisplayName("测试注册")
-//    public void testregedit() {
-//        UserDto userDto = new UserDto();
-//        userDto.setUserAccount("tom");
-//        userDto.setUserPassword("123456;");
-//        userDto.setCode("123456;");
-//        Long result = userService.regedit(userDto);
-//        assertNotNull(result,"注册失败");
-//    }
-
-//    @Test
-//    @DisplayName("测试注册成功")
-//    public void testregeditValid() {
-//        UserDto userDto = new UserDto();
-//        userDto.setUserAccount("tom");
-//        userDto.setUserPassword("123456;");
-//        userDto.setCode("123456");
-//        Long result = userService.regedit(userDto);
-//        assertNotNull(result,"注册失败");
-//    }
-
-
-//    @Test
-//    @DisplayName("测试注册失败")
-//    public void testregeditFail() {
-//        UserDto userDto = new UserDto();
-//        userDto.setUserAccount("tom");
-//        userDto.setUserPassword("123456;");
-//        userDto.setCode("123456");
-//        Long result = userService.regedit(userDto);
-//        assertNotNull(result,"注册失败");
-//    }
 
     @Test
     @DisplayName("测试登录成功")

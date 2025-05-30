@@ -69,6 +69,15 @@ public class UserController {
         return Result.success(userSimpleVos);
     }
 
+    @GetMapping("/forbid")
+    @PreAuth(userRole = "管理员")
+    public Result forbidUser(String account, HttpServletRequest request) {
+        Boolean result = userService.forbid(account,request);
+        if(result){
+            return Result.success(null);
+        } else
+            return Result.fail(ErrorCode.SERVER_ERROR,"用户账号为空");
+    }
     @DeleteMapping("/delete")
     @PreAuth(userRole = "管理员")
     public Result deleteUser(Long userId,HttpServletRequest request) {
@@ -103,4 +112,5 @@ public class UserController {
             return Result.fail("退出登录失败","退出登录失败");
         return Result.success(null);
     }
+
 }
