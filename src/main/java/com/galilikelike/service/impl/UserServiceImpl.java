@@ -114,7 +114,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public Page<UserVo> searchPageUsers(@Valid PageDto pageDto,HttpServletRequest request) {
 //        return this.list(new Page<>(pageDto.getCurrent(),pageDto.getPageSize())).stream().map(this::getUserVo).toList();
-        Page<User> userPage = userMapper.selectPage(new Page<>(pageDto.getCurrent(),pageDto.getPageSize()),null);
+//        Page<User> userPage = userMapper.selectPage(new Page<>(pageDto.getCurrent(),pageDto.getPageSize()),null);
+        Page<User> userPage = userMapper.selectUserPage(new Page<User>(pageDto.getCurrent(), pageDto.getPageSize()));
         List<User> users = userPage.getRecords();
         List<UserVo> userVos = users.stream().map(this::getUserVo).collect(Collectors.toList());
         LOG.info("用户:{}",userVos);

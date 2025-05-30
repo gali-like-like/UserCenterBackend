@@ -25,7 +25,7 @@
         isDelete
     </sql>
 
-    <select id="selectUserPage" resultType="com.galilikelike.model.pojo.User">
+    <select id="selectUserPage" resultMap="BaseResultMap" parameterType="com.galilikelike.model.pojo.User">
         select * from users where user_role = 0 and user_status = 0 order by create_time
     </select>
 </mapper>
