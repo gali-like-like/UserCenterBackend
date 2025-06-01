@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 @RestControllerAdvice
 public class ExceptionHandle {
@@ -28,6 +29,14 @@ public class ExceptionHandle {
         log.error(e.getMessage());
         return Result.fail(e.getMessage(),e.getMessage());
     }
+
+    @Order(2)
+    @ExceptionHandler(TimeoutException.class)
+    public Result handleTimeout(TimeoutException e) {
+        log.error(e.getMessage());
+        return Result.fail(ErrorCode.TIMEOUT_ERROR);
+    }
+
     @Order(2)
     @ExceptionHandler(DataAccessException.class)
     public Result handleDataAccess(DataAccessException e) {

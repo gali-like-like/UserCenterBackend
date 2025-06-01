@@ -11,6 +11,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.galilikelike.common.BusinessException;
 import com.galilikelike.mapper.UserMapper;
+import com.galilikelike.model.dto.ConditionQuery;
 import com.galilikelike.model.dto.PageDto;
 import com.galilikelike.model.dto.UserDto;
 import com.galilikelike.model.dto.UserLoginDto;
@@ -26,15 +27,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 import org.springframework.validation.annotation.Validated;
 
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import com.galilikelike.contant.UserContant;
 /**
@@ -102,7 +105,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             if (!queryUserPd.equals(inputEncrypt)) {
                 throw new BusinessException("密码错误");
             } else {
-                UserVo userVo = this.getUserVo(queryUser);
+                UserVo userVo = User.getUserVo(queryUser);
                 HttpSession session = request.getSession();
                 LOG.info(session.toString());
                 request.getSession().setAttribute(UserContant.LOGIN_STATUS,userVo);
@@ -118,7 +121,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 //        Page<User> userPage = userMapper.selectPage(new Page<>(pageDto.getCurrent(),pageDto.getPageSize()),null);
         Page<User> userPage = userMapper.selectUserPage(new Page<User>(pageDto.getCurrent(), pageDto.getPageSize()));
         List<User> users = userPage.getRecords();
-        List<UserVo> userVos = users.stream().map(this::getUserVo).collect(Collectors.toList());
+        List<UserVo> userVos = users.stream().map(User::getUserVo).collect(Collectors.toList());
         LOG.info("用户:{}",userVos);
         Page<UserVo> userVoPage = new Page<>(userPage.getCurrent(),userPage.getSize(),userPage.getTotal());
         userVoPage.setRecords(userVos);
@@ -135,6 +138,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             return true;
         }
     }
+
 
     @Override
     public Boolean forbid(String account,HttpServletRequest request) {
@@ -172,7 +176,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Override
     public List<UserSimpleVo> viewsUsers(PageDto pageDto,HttpServletRequest request) {
-        return this.list(new Page<>(pageDto.getCurrent(),pageDto.getPageSize())).stream().map(this::getUserSimpleVo).toList();
+        return this.list(new Page<>(pageDto.getCurrent(),pageDto.getPageSize())).stream().map(User::getUserSimpleVo).toList();
     }
 
     @Override
@@ -183,7 +187,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("UserAccount",UserAccount);
         List<User> userList = this.list(queryWrapper);
-        List<UserVo> userVos = userList.stream().map(this::getUserVo).collect(Collectors.toList());
+        List<UserVo> userVos = userList.stream().map(User::getUserVo).collect(Collectors.toList());
         return userVos;
     }
 
@@ -211,48 +215,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             } else {
                 Long userId = userVo.getId();
                 User currentUser = this.getById(userId);
-                UserVo currentUserVo = this.getUserVo(currentUser);
+                UserVo currentUserVo = User.getUserVo(currentUser);
                 LOG.info("user:{}",currentUserVo);
                 return currentUserVo;
             }
         }
-    }
-
-    public UserSimpleVo getUserSimpleVo(User user) {
-        UserSimpleVo userSimpleVo = new UserSimpleVo();
-        userSimpleVo.setUserName(user.getUserName());
-        userSimpleVo.setAvatarUrl(user.getAvatarUrl());
-        userSimpleVo.setId(user.getId());
-        return userSimpleVo;
-    }
-
-    public UserVo getUserVo(User user) {
-        UserVo userVo = new UserVo();
-        userVo.setId(user.getId());
-        userVo.setUserName(user.getUserAccount());
-        userVo.setUserAccount(user.getUserAccount());
-        userVo.setUserPassword(user.getUserPassword());
-        userVo.setAvatarUrl(user.getAvatarUrl());
-        userVo.setUserRole(user.getUserRole()==1?"管理员":"普通用户");
-        userVo.setUserStatus(user.getUserStatus()==0?"正常":"封号");
-        userVo.setCreateTime(user.getCreateTime());
-        String phone = user.getPhone();
-        if (Objects.isNull(phone)) {
-            userVo.setHiddenPhone(phone);
-        } else {
-            String hiddenPhone = phone.replace(phone.substring(3, 7), "****");
-            userVo.setHiddenPhone(hiddenPhone);
-        }
-        String email = user.getEmail();
-        if (Objects.isNull(email) || ( Objects.nonNull(email) && email.isEmpty()))
-        {
-            userVo.setHiddenEmail(email);
-        } else {
-            int count = email.lastIndexOf("@");
-            String hiddenEmail = email.replace(email.substring(0, count), "*".repeat(count + 1));
-            userVo.setHiddenEmail(hiddenEmail);
-        }
-        return userVo;
     }
 
 }

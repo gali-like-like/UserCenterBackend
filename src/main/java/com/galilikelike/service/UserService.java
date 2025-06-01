@@ -2,6 +2,7 @@ package com.galilikelike.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.galilikelike.model.dto.ConditionQuery;
 import com.galilikelike.model.dto.PageDto;
 import com.galilikelike.model.dto.UserDto;
 import com.galilikelike.model.dto.UserLoginDto;
@@ -13,6 +14,8 @@ import jakarta.validation.Valid;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 
 /**

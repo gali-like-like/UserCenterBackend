@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.galilikelike.contant.UserContant;
+import com.galilikelike.model.dto.ConditionQuery;
 import com.galilikelike.model.pojo.User;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -33,6 +34,10 @@ public interface UserMapper extends BaseMapper<User> {
     }
 
     Page<User> selectUserPage(Page<User> page);
+
+    List<User> selectUserByCondition(ConditionQuery query);
+
+    Integer totalByCondition(ConditionQuery query);
 
     default Boolean changeStatus(String userAccount) {
         if (StringUtils.isNotEmpty(userAccount)) {

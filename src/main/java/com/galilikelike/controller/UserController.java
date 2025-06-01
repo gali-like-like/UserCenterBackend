@@ -5,6 +5,7 @@ import com.galilikelike.annos.PreAuth;
 import com.galilikelike.common.BusinessException;
 import com.galilikelike.common.ErrorCode;
 import com.galilikelike.common.Result;
+import com.galilikelike.model.dto.ConditionQuery;
 import com.galilikelike.model.dto.PageDto;
 import com.galilikelike.model.dto.UserDto;
 import com.galilikelike.model.dto.UserLoginDto;
@@ -12,6 +13,7 @@ import com.galilikelike.model.pojo.User;
 import com.galilikelike.model.vo.UserSimpleVo;
 import com.galilikelike.model.vo.UserVo;
 import com.galilikelike.service.UserService;
+import com.galilikelike.service.impl.ConditionService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -21,6 +23,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 @RestController
 @RequestMapping(path = "/user")
@@ -29,6 +33,9 @@ public class UserController {
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private ConditionService conService;
 
     @PostMapping("/regedit")
     public Result regedit(@Valid @RequestBody UserDto userDto, HttpServletRequest request) throws BusinessException {
@@ -58,8 +65,8 @@ public class UserController {
 
     @PostMapping("/page")
     @PreAuth(userRole = "管理员")
-    public Result searchPageUsers(@Valid @RequestBody PageDto pageDto,HttpServletRequest request) {
-        Page<UserVo> pageUsers = userService.searchPageUsers(pageDto, request);
+    public Result searchPageUsers(@Valid @RequestBody ConditionQuery query, HttpServletRequest request) throws ExecutionException, InterruptedException, TimeoutException {
+        Page<UserVo> pageUsers = conService.selectByCondition(query, request);
         return Result.success(pageUsers);
     }
 

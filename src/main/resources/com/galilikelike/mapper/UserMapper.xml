@@ -7,4 +7,38 @@
     <select id="selectUserPage" resultType="com.galilikelike.model.pojo.User">
         select * from users where userStatus = 0 and userRole = 0 order by createTime
     </select>
+
+    <sql id="commonSql">
+        select * from users
+    </sql>
+
+    <sql id="condition">
+        <if test="userName != null and !userName.isEmpty()">
+            userName like concat('%',#{userName},'%')
+        </if>
+        <if test="userStatus != null" >
+            and userStatus = #{userStatus}
+        </if>
+        <if test="userAccount != null and !userAccount.isEmpty()">
+            and userAccount = #{userAccount}
+        </if>
+    </sql>
+
+    <select id="selectUserByCondition" resultType="com.galilikelike.model.pojo.User"
+            parameterType="com.galilikelike.model.dto.ConditionQuery" >
+        <include refid="commonSql"/>
+        <where>
+            <include refid="condition" />
+        </where>
+        order by createTime limit #{current},#{pageSize};
+    </select>
+
+    <select id="totalByCondition" resultType="java.lang.Integer"
+            parameterType="com.galilikelike.model.dto.ConditionQuery" >
+        select count(*) from users
+        <where>
+            <include refid="condition" />
+        </where>
+    </select>
+
 </mapper>
