@@ -5,10 +5,7 @@ import com.galilikelike.annos.PreAuth;
 import com.galilikelike.common.BusinessException;
 import com.galilikelike.common.ErrorCode;
 import com.galilikelike.common.Result;
-import com.galilikelike.model.dto.ConditionQuery;
-import com.galilikelike.model.dto.PageDto;
-import com.galilikelike.model.dto.UserDto;
-import com.galilikelike.model.dto.UserLoginDto;
+import com.galilikelike.model.dto.*;
 import com.galilikelike.model.pojo.User;
 import com.galilikelike.model.vo.UserSimpleVo;
 import com.galilikelike.model.vo.UserVo;
@@ -20,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Objects;
@@ -119,5 +117,35 @@ public class UserController {
             return Result.fail("退出登录失败","退出登录失败");
         return Result.success(null);
     }
+    // todo 编辑用户信息的接口
 
+    @PostMapping("/edit")
+    public Result editUser(@Valid @RequestBody UserBaseDto userBaseDto) {
+        UserVo edit = userService.edit(userBaseDto);
+        return Result.success(edit);
+    }
+
+    @PostMapping("/phone")
+    public Result showPhone() {
+        String phone = userService.showPhone();
+        return Result.success(phone);
+    }
+
+    @PostMapping("/email")
+    public Result showEmail() {
+        String email = userService.showEmail();
+        return Result.success(email);
+    }
+
+    @PostMapping("/upload")
+    public Result uploadHeader(MultipartFile file) {
+        userService.upload(file);
+        return Result.success(null);
+    }
+
+    @PostMapping("/password")
+    public Result updatePassword(@RequestBody PasswordDto passwordDto) {
+        userService.updatePassword(passwordDto);
+        return Result.success(null);
+    }
 }

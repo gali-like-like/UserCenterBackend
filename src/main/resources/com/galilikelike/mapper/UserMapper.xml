@@ -41,4 +41,22 @@
         </where>
     </select>
 
+    <update id="edit">
+        update users
+        <set>
+            <if test="userName != null">
+                userName = #{userName}
+            </if>
+            <if test="hiddenPhone">
+                ,hiddenPhone = #{hiddenPhone}
+            </if>
+            <if test="hiddenEmail">
+                ,hiddenEmail = #{hiddenEmail}
+            </if>
+        </set>
+        <where>
+            userAccount = #{userAccount}
+        </where>
+    </update>
+
 </mapper>

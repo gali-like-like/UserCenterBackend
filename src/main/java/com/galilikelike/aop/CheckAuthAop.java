@@ -1,5 +1,6 @@
 package com.galilikelike.aop;
 
+import com.galilikelike.Utils.UserInfoHold;
 import com.galilikelike.annos.PreAuth;
 import com.galilikelike.common.ErrorCode;
 import com.galilikelike.common.Result;

@@ -9,12 +9,10 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.galilikelike.Utils.UserInfoHold;
 import com.galilikelike.common.BusinessException;
 import com.galilikelike.mapper.UserMapper;
-import com.galilikelike.model.dto.ConditionQuery;
-import com.galilikelike.model.dto.PageDto;
-import com.galilikelike.model.dto.UserDto;
-import com.galilikelike.model.dto.UserLoginDto;
+import com.galilikelike.model.dto.*;
 import com.galilikelike.model.pojo.User;
 import com.galilikelike.model.vo.UserSimpleVo;
 import com.galilikelike.model.vo.UserVo;
@@ -33,6 +31,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 import org.springframework.validation.annotation.Validated;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.util.List;
@@ -40,6 +40,8 @@ import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import com.galilikelike.contant.UserContant;
+import org.springframework.web.multipart.MultipartFile;
+
 /**
 * @author galiLikeLike
 * @description 针对表【users】的数据库操作Service实现
@@ -178,6 +180,38 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     public List<UserSimpleVo> viewsUsers(PageDto pageDto,HttpServletRequest request) {
         return this.list(new Page<>(pageDto.getCurrent(),pageDto.getPageSize())).stream().map(User::getUserSimpleVo).toList();
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public UserVo edit(UserBaseDto userBaseDto) {
+        String userAccount = UserInfoHold.getUserHold().get();
+        userBaseDto.setUserAccount(userAccount);
+        userMapper.edit(userBaseDto);
+        User user = userMapper.selectUserByUserAccount(userAccount);
+        return User.getUserVo(user);
+    };
+
+    public String showPhone() {
+        String userAccount = UserInfoHold.getUserHold().get();
+        return userMapper.showPhone(userAccount);
+    };
+
+    public String showEmail() {
+        String userAccount = UserInfoHold.getUserHold().get();
+        return userMapper.showEmail(userAccount);
+    };
+
+    public Boolean updatePassword(PasswordDto passwordDto) {
+        String userAccount = UserInfoHold.getUserHold().get();
+        userMapper.updateUserPassword(passwordDto,userAccount);
+        return true;
+    };
+
+    public Boolean upload(MultipartFile file) {
+        String originalFilename = file.getOriginalFilename();
+        LOG.info("file name:{},file type:{}",originalFilename,file.getContentType());
+        return true;
+    };
 
     @Override
     public List<UserVo> searchUser(String UserAccount) {

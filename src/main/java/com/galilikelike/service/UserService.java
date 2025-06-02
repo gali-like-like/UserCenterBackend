@@ -2,16 +2,14 @@ package com.galilikelike.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.galilikelike.model.dto.ConditionQuery;
-import com.galilikelike.model.dto.PageDto;
-import com.galilikelike.model.dto.UserDto;
-import com.galilikelike.model.dto.UserLoginDto;
+import com.galilikelike.model.dto.*;
 import com.galilikelike.model.pojo.User;
 import com.galilikelike.model.vo.UserSimpleVo;
 import com.galilikelike.model.vo.UserVo;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -49,4 +47,14 @@ public interface UserService extends IService<User> {
     List<UserSimpleVo> viewsUsers(PageDto pageDto,HttpServletRequest request);
 
     Boolean forbid(String account,HttpServletRequest request);
+
+    UserVo edit(UserBaseDto userBaseDto);
+
+    String showPhone();
+
+    String showEmail();
+
+    Boolean updatePassword(PasswordDto passwordDto);
+
+    Boolean upload(MultipartFile file);
 }

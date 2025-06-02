@@ -6,10 +6,15 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.galilikelike.Utils.UserInfoHold;
 import com.galilikelike.contant.UserContant;
 import com.galilikelike.model.dto.ConditionQuery;
+import com.galilikelike.model.dto.PasswordDto;
+import com.galilikelike.model.dto.UserBaseDto;
 import com.galilikelike.model.pojo.User;
+import com.galilikelike.model.vo.UserVo;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -48,6 +53,23 @@ public interface UserMapper extends BaseMapper<User> {
         }
         return false;
     }
+
+    void edit(UserBaseDto userVo);
+
+    @Select("select phone from users where userAccount = #{userAccount}")
+    String showPhone(String userAccount);
+
+    @Select("select email from users where userAccount = #{userAccount}")
+    String showEmail(String userAccount);
+
+    default void updateUserPassword(PasswordDto passwordDto,String userAccount) {
+        UpdateWrapper<User> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.set("userPassword",passwordDto.getNewPassword()).eq("userAccount",userAccount);
+        this.update(updateWrapper);
+    };
+
+    @Select("select * from users where userAccount = #{account}")
+    User selectUserByUserAccount(String account);
 }
 
 
