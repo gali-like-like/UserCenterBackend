@@ -54,7 +54,7 @@ public interface UserMapper extends BaseMapper<User> {
         return false;
     }
 
-    void edit(UserBaseDto userVo);
+    void edit(UserVo userVo);
 
     @Select("select phone from users where userAccount = #{userAccount}")
     String showPhone(String userAccount);

@@ -12,7 +12,9 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class PasswordDto implements Serializable {
 
-    private String oldPassword;
+    @NotNull(message = "确认密码不能为空!")
+    @Pattern(regexp = "\\w{6,}",message = "确认密码不能包含特殊字符，且长度至少6个字符")
+    private String tryPassword;
 
     @NotNull(message = "密码不能为空!")
     @Pattern(regexp = "\\w{6,}",message = "密码不能包含特殊字符，且长度至少6个字符")

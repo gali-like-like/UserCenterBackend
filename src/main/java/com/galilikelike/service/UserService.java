@@ -48,13 +48,15 @@ public interface UserService extends IService<User> {
 
     Boolean forbid(String account,HttpServletRequest request);
 
-    UserVo edit(UserBaseDto userBaseDto);
+    UserVo edit(UserVo userBaseDto);
 
     String showPhone();
 
     String showEmail();
 
-    Boolean updatePassword(PasswordDto passwordDto);
+    Boolean updatePassword(@Valid PasswordDto passwordDto);
 
     Boolean upload(MultipartFile file);
+
+    User getCurUser(HttpServletRequest request);
 }

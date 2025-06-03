@@ -34,10 +34,13 @@ import org.springframework.validation.annotation.Validated;
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import com.galilikelike.contant.UserContant;
 import org.springframework.web.multipart.MultipartFile;
@@ -183,27 +186,51 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public UserVo edit(UserBaseDto userBaseDto) {
-        String userAccount = UserInfoHold.getUserHold().get();
-        userBaseDto.setUserAccount(userAccount);
+    public UserVo edit(UserVo userBaseDto) {
+        User user = UserInfoHold.getUserHold().get();
+        // todo 比较
+        String userPhone = userBaseDto.getHiddenPhone();
+        /**
+         * 13245641111
+         * */
+        Pattern compilePhone = Pattern.compile("^(13[0-9]|14[5-9]|15[0-35-9]|16[56]|17[0-8]|18[0-9]|19[0-35-9])\\d{8}$");
+        Matcher matcherPhone = compilePhone.matcher(userPhone);
+        LOG.info("phone:{},reg:{}",compilePhone,compilePhone.toString());
+        if (!matcherPhone.matches()) {
+            throw new BusinessException("手机号格式错误");
+        }
+        String userEmail = userBaseDto.getHiddenEmail();
+        Pattern compileEmail = Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
+        Matcher matcherEmail = compileEmail.matcher(userEmail);
+        if (!matcherEmail.matches()) {
+            throw new BusinessException("邮箱格式错误");
+        }
         userMapper.edit(userBaseDto);
-        User user = userMapper.selectUserByUserAccount(userAccount);
+        user.setUserName(userBaseDto.getUserName());
+        user.setPhone(userBaseDto.getHiddenPhone());
+        user.setEmail(userBaseDto.getHiddenEmail());
         return User.getUserVo(user);
     };
 
     public String showPhone() {
-        String userAccount = UserInfoHold.getUserHold().get();
-        return userMapper.showPhone(userAccount);
+        User user = UserInfoHold.getUserHold().get();
+        return user.getPhone();
     };
 
     public String showEmail() {
-        String userAccount = UserInfoHold.getUserHold().get();
-        return userMapper.showEmail(userAccount);
+        User user = UserInfoHold.getUserHold().get();
+        return userMapper.showEmail(user.getEmail());
     };
 
-    public Boolean updatePassword(PasswordDto passwordDto) {
-        String userAccount = UserInfoHold.getUserHold().get();
-        userMapper.updateUserPassword(passwordDto,userAccount);
+    public Boolean updatePassword(@Valid PasswordDto passwordDto) {
+        User user = UserInfoHold.getUserHold().get();
+        if (!passwordDto.getNewPassword().equals(passwordDto.getTryPassword())) {
+            throw new BusinessException("确认密码和密码不一样");
+        }
+        String updatedPassword = passwordDto.getNewPassword();
+        String encryptPassword = DigestUtils.md5DigestAsHex((updatedPassword + UserContant.SALT).getBytes(StandardCharsets.UTF_8));
+        passwordDto.setNewPassword(encryptPassword);
+        userMapper.updateUserPassword(passwordDto,user.getUserAccount());
         return true;
     };
 
@@ -234,6 +261,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         updateWrapper.set("isDelete",1).eq("id",userId);
         return this.update(updateWrapper);
     }
+
+    public User getCurUser(HttpServletRequest request) {
+        HttpSession session = request.getSession();
+
+        if (session == null) {
+            throw BusinessException.getUserNotLogin();
+        } else {
+            UserVo userVo = (UserVo) session.getAttribute(UserContant.LOGIN_STATUS);
+            if (Objects.isNull(userVo)) {
+                throw BusinessException.getUserNull();
+            }
+            return userMapper.selectUserByUserAccount(userVo.getUserAccount());
+        }
+
+    };
+
 
     @Override
     public UserVo getCurrentUser(HttpServletRequest request) {

@@ -3,6 +3,7 @@ package com.galilikelike.exceptions;
 import com.galilikelike.common.BusinessException;
 import com.galilikelike.common.ErrorCode;
 import com.galilikelike.common.Result;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +12,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.Arrays;
@@ -66,11 +68,11 @@ public class ExceptionHandle {
         return Result.fail(ErrorCode.PARAM_ERROR,String.join(",",errors.values()));
     }
 
-//    @Order(10000)
-//    @ExceptionHandler(Exception.class)
-//    public Result handleOther(Exception e) {
-//        log.error(e.getMessage());
-//        return Result.fail(ErrorCode.SERVER_ERROR);
-//    }
+    @Order(10000)
+    @ExceptionHandler(Exception.class)
+    public Result handleOther(Exception e) {
+        log.error(e.getMessage());
+        return Result.fail(ErrorCode.SERVER_ERROR);
+    }
 
 }

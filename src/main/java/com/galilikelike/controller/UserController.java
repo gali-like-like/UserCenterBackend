@@ -120,7 +120,7 @@ public class UserController {
     // todo 编辑用户信息的接口
 
     @PostMapping("/edit")
-    public Result editUser(@Valid @RequestBody UserBaseDto userBaseDto) {
+    public Result editUser(@Valid @RequestBody UserVo userBaseDto) {
         UserVo edit = userService.edit(userBaseDto);
         return Result.success(edit);
     }
@@ -144,8 +144,11 @@ public class UserController {
     }
 
     @PostMapping("/password")
-    public Result updatePassword(@RequestBody PasswordDto passwordDto) {
-        userService.updatePassword(passwordDto);
-        return Result.success(null);
+    public Result updatePassword(@Valid @RequestBody PasswordDto passwordDto) {
+        Boolean result = userService.updatePassword(passwordDto);
+        if (result)
+            return Result.success(null);
+        else
+            return Result.fail("修改密码失败","修改密码失败");
     }
 }

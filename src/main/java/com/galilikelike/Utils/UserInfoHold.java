@@ -1,12 +1,13 @@
 package com.galilikelike.Utils;
 
+import com.galilikelike.model.pojo.User;
 import com.galilikelike.model.vo.UserVo;
 
 public class UserInfoHold {
 
-    private static ThreadLocal<String> userHold = new ThreadLocal<>();
+    private static ThreadLocal<User> userHold = new ThreadLocal<>();
 
-    public static ThreadLocal<String> getUserHold() {
+    public static ThreadLocal<User> getUserHold() {
         return userHold;
     }
 

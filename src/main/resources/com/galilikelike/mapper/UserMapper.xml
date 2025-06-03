@@ -48,10 +48,10 @@
                 userName = #{userName}
             </if>
             <if test="hiddenPhone">
-                ,hiddenPhone = #{hiddenPhone}
+                ,phone = #{hiddenPhone}
             </if>
             <if test="hiddenEmail">
-                ,hiddenEmail = #{hiddenEmail}
+                ,email = #{hiddenEmail}
             </if>
         </set>
         <where>
