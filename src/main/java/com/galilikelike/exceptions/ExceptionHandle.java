@@ -71,7 +71,7 @@ public class ExceptionHandle {
     @Order(10000)
     @ExceptionHandler(Exception.class)
     public Result handleOther(Exception e) {
-        log.error(e.getMessage());
+        e.printStackTrace();
         return Result.fail(ErrorCode.SERVER_ERROR);
     }
 

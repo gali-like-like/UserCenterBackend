@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -56,7 +57,7 @@ public interface UserService extends IService<User> {
 
     Boolean updatePassword(@Valid PasswordDto passwordDto);
 
-    Boolean upload(MultipartFile file);
+    Boolean upload(MultipartFile file,String fileHash) throws IOException;
 
     User getCurUser(HttpServletRequest request);
 }

@@ -9,6 +9,10 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.galilikelike.Utils.CalcFileSum;
+import com.galilikelike.Utils.ManageCosUtils;
+import com.galilikelike.Utils.UUIDUntils;
 import com.galilikelike.Utils.UserInfoHold;
 import com.galilikelike.common.BusinessException;
 import com.galilikelike.mapper.UserMapper;
@@ -18,6 +22,8 @@ import com.galilikelike.model.vo.UserSimpleVo;
 import com.galilikelike.model.vo.UserVo;
 import com.galilikelike.service.UserService;
 
+import com.qcloud.cos.model.ObjectMetadata;
+import com.qcloud.cos.model.PutObjectResult;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -33,11 +39,15 @@ import org.springframework.validation.annotation.Validated;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -104,6 +114,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (Objects.isNull(queryUser)) {
             throw BusinessException.getUserNull();
         } else {
+            if (queryUser.getUserStatus() == 1) {
+                throw new BusinessException("用户被封号,无法登录");
+            } else if(queryUser.getIsDelete() == (short)1) {
+                throw new BusinessException("用户已注销,无法登录");
+            }
             String queryUserPd = queryUser.getUserPassword();
             String inputPassword = userLoginDto.getUserPassword();
             String inputEncrypt = DigestUtils.md5DigestAsHex((UserContant.SALT+inputPassword).getBytes(StandardCharsets.UTF_8));
@@ -167,10 +182,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         captcha.createCode();
         String code = captcha.getCode();
         LOG.info("验证码:{},图像验证码:{}",code,captcha.getImageBase64Data());
-        // 根据ip
-//        String remoteIp = request.getRemoteAddr();
-//        hashMap.put(remoteIp,captcha);
-        // 设置session
         request.getSession().setAttribute("captcha",captcha);
         return captcha.getImageBase64Data();
     }
@@ -234,11 +245,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return true;
     };
 
-    public Boolean upload(MultipartFile file) {
-        String originalFilename = file.getOriginalFilename();
-        LOG.info("file name:{},file type:{}",originalFilename,file.getContentType());
-        return true;
-    };
+    public Boolean upload(MultipartFile file,String fileHash) throws IOException {
+        try {
+            String fileSum = CalcFileSum.getSum(file.getBytes());
+            if (!fileSum.equals(fileHash)) {
+                throw new BusinessException("文件缺少内容,需要重新上传");
+            }
+            ManageCosUtils.upload(file);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("文件上传失败: " + e.getMessage());
+        }
+    }
 
     @Override
     public List<UserVo> searchUser(String UserAccount) {

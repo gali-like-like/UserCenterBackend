@@ -36,7 +36,7 @@ import java.util.Objects;
 public class CheckFilter implements Filter {
 
     private UserService userService;
-    private String[] noAuthArray = {"/api/user/login","/api/user/regedit","/api/user/code"};
+    private String[] noAuthArray = {"/api/user/login","/api/user/regedit","/api/user/code","/api/user/reset"};
 
     public void init(FilterConfig filterConfig) throws ServletException {
         ServletContext servletContext = filterConfig.getServletContext();

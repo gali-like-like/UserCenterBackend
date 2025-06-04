@@ -4,10 +4,12 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.galilikelike.Utils.ManageCosUtils;
 import com.galilikelike.model.vo.UserSimpleVo;
 import com.galilikelike.model.vo.UserVo;
 import lombok.Data;
 
+import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Objects;
@@ -95,7 +97,8 @@ public class User {
         userVo.setUserName(user.getUserAccount());
         userVo.setUserAccount(user.getUserAccount());
         userVo.setUserPassword(user.getUserPassword());
-        userVo.setAvatarUrl(user.getAvatarUrl());
+        String objectUrl = ManageCosUtils.getUrl(user.getAvatarUrl());
+        userVo.setAvatarUrl(objectUrl);
         userVo.setUserRole(user.getUserRole()==1?"管理员":"普通用户");
         userVo.setUserStatus(user.getUserStatus()==0?"正常":"封号");
         userVo.setCreateTime(user.getCreateTime());
