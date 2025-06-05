@@ -5,7 +5,6 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.ProtocolException;
 import java.net.URL;
-import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,16 +16,16 @@ import com.qcloud.cos.auth.COSCredentials;
 import com.qcloud.cos.endpoint.UserSpecifiedEndpointBuilder;
 import com.qcloud.cos.http.HttpMethodName;
 import com.qcloud.cos.http.HttpProtocol;
-import com.qcloud.cos.model.GeneratePresignedUrlRequest;
-import com.qcloud.cos.model.ResponseHeaderOverrides;
+import com.qcloud.cos.model.*;
 import com.qcloud.cos.region.Region;
 import com.qcloud.cos.utils.DateUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * GeneratePresignedUrlDemo展示了生成预签名的下载链接与上传连接的使用示例.
  * 用于可将生成的连接分发给移动端或者他人, 即可实现在签名有效期内上传或者下载文件.
  */
-public class GeneratePresignedUrlDemo {
+public class CosUtils {
     private static String secretId = System.getenv("USER_CENTER_TENXUN_SECRET_ID");;
     private static String secretKey = System.getenv("USER_CENTER_TENXUN_SECRET_KEY");;
     private static String bucketName = "user-center-1317592623";
@@ -69,8 +68,8 @@ public class GeneratePresignedUrlDemo {
     }
 
     // 获取预签名的下载链接, 并设置返回的content-type, cache-control等http头
-    public static void generatePresignedDownloadUrlWithOverrideResponseHeader(String key) {
-
+    public static String generatePresignedDownloadUrlWithOverrideResponseHeader(String key) {
+        COSClient client = createCli();
         GeneratePresignedUrlRequest req = new GeneratePresignedUrlRequest(bucketName, key, HttpMethodName.GET);
         // 设置下载时返回的http头
         ResponseHeaderOverrides responseHeaders = new ResponseHeaderOverrides();
@@ -90,9 +89,31 @@ public class GeneratePresignedUrlDemo {
 
         URL url = cosClient.generatePresignedUrl(req,false);
         System.out.println(url.toString());
-
-
+        client.shutdown();
+        return url.toString();
     }
+
+    public static void upload(MultipartFile file) throws IOException {
+        // 指定要上传的文件
+// 指定文件将要存放的存储桶
+// 指定文件上传到 COS 上的路径，即对象键。例如对象键为 folder/picture.jpg，则表示将文件 picture.jpg 上传到 folder 路径下
+        COSClient client = createCli();
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentType(file.getContentType());
+        metadata.setContentLength(file.getSize());
+        String originalFilename = file.getOriginalFilename().toLowerCase();
+        String key = "headers/" + UUIDUntils.randomUUID() + originalFilename; // 存储路径+uuid+后缀名
+        // 3. 通过输入流直接上传到COS
+        PutObjectRequest request = new PutObjectRequest(
+                bucketName,
+                key,
+                file.getInputStream(),
+                metadata
+        );
+        PutObjectResult putObjectResult = client.putObject(request);
+        client.shutdown();
+    }
+
 
     // 生成预签名的上传连接
     private static void generatePresignedUploadUrl(String key) {

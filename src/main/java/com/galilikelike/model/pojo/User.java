@@ -4,14 +4,11 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.galilikelike.Utils.ManageCosUtils;
 import com.galilikelike.model.vo.UserSimpleVo;
 import com.galilikelike.model.vo.UserVo;
 import lombok.Data;
 
-import java.net.URL;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.Objects;
 
 /**
@@ -91,33 +88,5 @@ public class User {
         return userSimpleVo;
     }
 
-    public static UserVo getUserVo(User user) {
-        UserVo userVo = new UserVo();
-        userVo.setId(user.getId());
-        userVo.setUserName(user.getUserAccount());
-        userVo.setUserAccount(user.getUserAccount());
-        userVo.setUserPassword(user.getUserPassword());
-        String objectUrl = ManageCosUtils.getUrl(user.getAvatarUrl());
-        userVo.setAvatarUrl(objectUrl);
-        userVo.setUserRole(user.getUserRole()==1?"管理员":"普通用户");
-        userVo.setUserStatus(user.getUserStatus()==0?"正常":"封号");
-        userVo.setCreateTime(user.getCreateTime());
-        String phone = user.getPhone();
-        if (Objects.isNull(phone)) {
-            userVo.setHiddenPhone(phone);
-        } else {
-            String hiddenPhone = phone.replace(phone.substring(3, 7), "****");
-            userVo.setHiddenPhone(hiddenPhone);
-        }
-        String email = user.getEmail();
-        if (Objects.isNull(email) || ( Objects.nonNull(email) && email.isEmpty()))
-        {
-            userVo.setHiddenEmail(email);
-        } else {
-            int count = email.lastIndexOf("@");
-            String hiddenEmail = email.replace(email.substring(0, count), "*".repeat(count + 1));
-            userVo.setHiddenEmail(hiddenEmail);
-        }
-        return userVo;
-    }
+
 }

@@ -1,10 +1,12 @@
 package com.galilikelike.model.user;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.galilikelike.Utils.GeneratePresignedUrlDemo;
-import com.galilikelike.Utils.ManageCosUtils;
+import com.galilikelike.Utils.CosUtils;
+import com.galilikelike.Utils.UserConvert;
 import com.galilikelike.model.dto.PageDto;
 import com.galilikelike.model.dto.UserDto;
 import com.galilikelike.model.dto.UserLoginDto;
@@ -124,8 +126,20 @@ public class TestUser {
     @Test
     @DisplayName("生成url")
     public void createUrl() {
-        GeneratePresignedUrlDemo.generatePresignedDownloadUrlWithOverrideResponseHeader("headers/01694541-7533-4410-b16e-a494eeb1aa4bui_5c6be7ac8ecf9.jpg");
+        CosUtils.generatePresignedDownloadUrlWithOverrideResponseHeader("headers/01694541-7533-4410-b16e-a494eeb1aa4bui_5c6be7ac8ecf9.jpg");
     }
+
+    @Test
+    @DisplayName("测试dto转vo")
+    public void testVo() {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("userAccount", "tony12346");
+        User user = userService.getOne(queryWrapper);
+        log.info("user:{}",user);
+        UserVo userVo = UserConvert.convertUserVo(user);
+        assertNotNull(userVo,"转换失败");
+    }
+
 
     @Test
     @DisplayName("测试文件hash值")

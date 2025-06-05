@@ -1,6 +1,7 @@
 package com.galilikelike.service.impl;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.galilikelike.Utils.UserConvert;
 import com.galilikelike.model.dto.ConditionQuery;
 import com.galilikelike.model.pojo.User;
 import com.galilikelike.model.vo.UserVo;
@@ -36,7 +37,7 @@ public class ConditionService {
         future.get(5, TimeUnit.SECONDS);
         List<User> users = futureUsers.get();
         Integer total = futureTotal.get();
-        List<UserVo> userVos = users.stream().map(User::getUserVo).toList();
+        List<UserVo> userVos = users.stream().map(UserConvert::convertUserVo).toList();
         Page<UserVo> userVoPage = new Page<>(query.getCurrent(),query.getPageSize(),total);
         userVoPage.setRecords(userVos);
         return userVoPage;

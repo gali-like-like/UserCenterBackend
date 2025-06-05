@@ -26,6 +26,7 @@ import org.springframework.web.server.WebFilterChain;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -36,12 +37,13 @@ import java.util.Objects;
 public class CheckFilter implements Filter {
 
     private UserService userService;
-    private String[] noAuthArray = {"/api/user/login","/api/user/regedit","/api/user/code","/api/user/reset"};
+    private String[] noAuthArray =  {"/api/user/login","/api/user/regedit","/api/user/code","/api/user/reset"};
 
     public void init(FilterConfig filterConfig) throws ServletException {
         ServletContext servletContext = filterConfig.getServletContext();
         WebApplicationContext webApplicationContext = WebApplicationContextUtils.getWebApplicationContext(servletContext);
         this.userService = webApplicationContext.getBean(UserService.class);
+        Arrays.sort(noAuthArray);
     }
 
     @Override
@@ -52,7 +54,9 @@ public class CheckFilter implements Filter {
             filterChain.doFilter(request,response);
         } else {
             log.info("{} {}",request.getMethod(),request.getRequestURI());
-            int index = Arrays.binarySearch(noAuthArray, request.getRequestURI());
+            String uri = request.getRequestURI();
+            int index = Arrays.binarySearch(noAuthArray, uri);
+            // todo 竟然找不到/api/user/code?
             if (index >= 0) {
                 filterChain.doFilter(request,response);
                 return;
@@ -77,6 +81,7 @@ public class CheckFilter implements Filter {
         response.setCharacterEncoding("UTF-8"); // 解决中文乱码
         ObjectMapper mapper = new ObjectMapper();
         String failJson = mapper.writeValueAsString(fail);
+        response.setStatus(HttpStatus.OK.value());
         response.getWriter().write(failJson);
     }
 

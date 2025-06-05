@@ -5,16 +5,16 @@ import cn.hutool.captcha.ShearCaptcha;
 import cn.hutool.captcha.generator.MathGenerator;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.galilikelike.Utils.CalcFileSum;
-import com.galilikelike.Utils.ManageCosUtils;
-import com.galilikelike.Utils.UUIDUntils;
+import com.galilikelike.Utils.CosUtils;
+import com.galilikelike.Utils.UserConvert;
 import com.galilikelike.Utils.UserInfoHold;
 import com.galilikelike.common.BusinessException;
+import com.galilikelike.groups.Login;
+import com.galilikelike.groups.Reset;
 import com.galilikelike.mapper.UserMapper;
 import com.galilikelike.model.dto.*;
 import com.galilikelike.model.pojo.User;
@@ -22,8 +22,6 @@ import com.galilikelike.model.vo.UserSimpleVo;
 import com.galilikelike.model.vo.UserVo;
 import com.galilikelike.service.UserService;
 
-import com.qcloud.cos.model.ObjectMetadata;
-import com.qcloud.cos.model.PutObjectResult;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -31,23 +29,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 import org.springframework.validation.annotation.Validated;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.sql.Connection;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -108,7 +98,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public UserVo login(@Valid UserLoginDto userLoginDto, HttpServletRequest request) {
+    public UserVo login(@Validated(Login.class) UserLoginDto userLoginDto, HttpServletRequest request) {
         String userAccount = userLoginDto.getUserAccount();
         User queryUser = this.getOne(new QueryWrapper<User>().eq("userAccount",userAccount));
         if (Objects.isNull(queryUser)) {
@@ -125,7 +115,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             if (!queryUserPd.equals(inputEncrypt)) {
                 throw new BusinessException("密码错误");
             } else {
-                UserVo userVo = User.getUserVo(queryUser);
+                UserVo userVo = UserConvert.convertUserVo(queryUser);
                 HttpSession session = request.getSession();
                 LOG.info(session.toString());
                 request.getSession().setAttribute(UserContant.LOGIN_STATUS,userVo);
@@ -141,7 +131,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 //        Page<User> userPage = userMapper.selectPage(new Page<>(pageDto.getCurrent(),pageDto.getPageSize()),null);
         Page<User> userPage = userMapper.selectUserPage(new Page<User>(pageDto.getCurrent(), pageDto.getPageSize()));
         List<User> users = userPage.getRecords();
-        List<UserVo> userVos = users.stream().map(User::getUserVo).collect(Collectors.toList());
+        List<UserVo> userVos = users.stream().map(UserConvert::convertUserVo).collect(Collectors.toList());
         LOG.info("用户:{}",userVos);
         Page<UserVo> userVoPage = new Page<>(userPage.getCurrent(),userPage.getSize(),userPage.getTotal());
         userVoPage.setRecords(userVos);
@@ -167,7 +157,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Override
     @Transactional(rollbackFor = DataAccessException.class)
-    public Boolean resetPassword(UserLoginDto loginDto) {
+    public Boolean resetPassword(@Validated(Reset.class) UserLoginDto loginDto) {
         String account = loginDto.getUserAccount();
         Boolean result = userMapper.resetPasswordByAccount(account);
         return result;
@@ -176,7 +166,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public String createCode(HttpServletRequest request) {
 // 自定义验证码内容为四则运算方式
-        ShearCaptcha captcha = CaptchaUtil.createShearCaptcha(200, 45, 4, 4);
+        ShearCaptcha captcha = CaptchaUtil.createShearCaptcha(200, 40, 4, 4);
         captcha.setGenerator(new MathGenerator());
 // 重新生成code
         captcha.createCode();
@@ -220,7 +210,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         user.setUserName(userBaseDto.getUserName());
         user.setPhone(userBaseDto.getHiddenPhone());
         user.setEmail(userBaseDto.getHiddenEmail());
-        return User.getUserVo(user);
+        return UserConvert.convertUserVo(user);
     };
 
     public String showPhone() {
@@ -230,7 +220,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     public String showEmail() {
         User user = UserInfoHold.getUserHold().get();
-        return userMapper.showEmail(user.getEmail());
+        return user.getEmail();
     };
 
     public Boolean updatePassword(@Valid PasswordDto passwordDto) {
@@ -251,7 +241,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             if (!fileSum.equals(fileHash)) {
                 throw new BusinessException("文件缺少内容,需要重新上传");
             }
-            ManageCosUtils.upload(file);
+            CosUtils.upload(file);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -267,7 +257,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("UserAccount",UserAccount);
         List<User> userList = this.list(queryWrapper);
-        List<UserVo> userVos = userList.stream().map(User::getUserVo).collect(Collectors.toList());
+        List<UserVo> userVos = userList.stream().map(UserConvert::convertUserVo).collect(Collectors.toList());
         return userVos;
     }
 
@@ -311,7 +301,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             } else {
                 Long userId = userVo.getId();
                 User currentUser = this.getById(userId);
-                UserVo currentUserVo = User.getUserVo(currentUser);
+                UserVo currentUserVo = UserConvert.convertUserVo(currentUser);
                 LOG.info("user:{}",currentUserVo);
                 return currentUserVo;
             }
